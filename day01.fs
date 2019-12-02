@@ -15,7 +15,7 @@ VARIABLE total
 : parse-number  ( n -- u )  >R 0 0 str R> >NUMBER 2DROP DROP ;
 : mass>fuel  ( u -- u' )  3 / 2- ;
 
-: go  ( -- )  
+: go  ( -- )
   open-input
   0 total !
   BEGIN read-number WHILE parse-number mass>fuel total +! REPEAT
