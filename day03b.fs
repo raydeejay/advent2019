@@ -103,8 +103,10 @@ line-length array str
 : segment+  ( addr -- addr' )  1 segments + ;
 : th-segment  ( addr i -- addr' )  /segment * CELLS + ;
 
-2000 segments ALLOCATE ABORT" Error allocating memory" CONSTANT wire1
-2000 segments ALLOCATE ABORT" Error allocating memory" CONSTANT wire2
+2000 segments ALLOCATE ABORT" Error allocating" CONSTANT wire1
+2000 segments ALLOCATE ABORT" Error allocating" CONSTANT wire2
+2000 segments ALLOCATE ABORT" Error allocating" CONSTANT wire1-normalized
+2000 segments ALLOCATE ABORT" Error allocating" CONSTANT wire2-normalized
 
 VARIABLE #wire1
 VARIABLE #wire2
@@ -121,12 +123,9 @@ VARIABLE #wire2
     ptr 1+ TO ptr
     ptr 8 parse-number TO ptr TO count
     \ add a new segment to the array
-    x y dir count make-segment
-    \ keep track of the coordinates and run length
-    2DUP TO y TO x
-    count acc + TO acc
+    x y dir count make-segment  2DUP TO y TO x
     acc dest store-segment
-    dest segment+ TO dest
+    count acc + TO acc  dest segment+ TO dest
   REPEAT
   ." Stored segments" CR ;
 
@@ -135,34 +134,51 @@ VARIABLE #wire2
 VARIABLE best-x
 VARIABLE best-y
 VARIABLE best-mhd
+VARIABLE best-steps
 
 : mhd  ( x y -- n )  ABS SWAP ABS + ;
+: better-mhd?  ( x y -- f )  2DUP mhd  0>  -ROT mhd best-mhd @ <  AND ;
+
+: steps  ( segment x y -- n )
+  { segment x y }
+  segment run-length @
+  segment ox @ x - abs +
+  segment oy @ y - abs + ;
+
+: shorter-route?  ( s1 s2 x y -- f )
+  { s1 s2 x y }
+  s1 x y steps  s2 x y steps +  best-steps @ < ;
+
+\ normalized wires are only needed to calculate the intersections
+: normalize-wire  ( addr dest count -- )
+  { addr dest count }
+  count 0 DO
+    addr I th-segment
+    normalize-segment
+    dest I th-segment store-segment
+  LOOP ;
 
 : get-nearest-crossing  ( -- )
-  999999999 best-mhd !
-  { | x y d }
+  999999999 DUP best-mhd ! best-steps !
+  { | x y }
   #wire1 @ 0 DO
     #wire2 @ 0 DO
-      wire1 J th-segment
-      wire2 I th-segment
+      wire1-normalized J th-segment
+      wire2-normalized I th-segment
       intersect? IF
         TO y TO x
-        x y mhd  0>  x y mhd best-mhd @ <  AND IF
-          x y mhd best-mhd ! y best-y ! x best-x !
+        x y better-mhd?
+        wire1 J th-segment wire2 I th-segment
+        { s1 s2 }
+        s1 s2 x y shorter-route? AND IF
+          x y mhd best-mhd !
+          s1 x y steps s2 x y steps + best-steps !
+          y best-y ! x best-x !
           ." New best distance: " best-mhd ? CR
         THEN
       THEN
     LOOP
   LOOP ;
-
-: normalize-wire  ( addr count -- )
-  { addr count }
-  count 0 DO
-    addr I th-segment
-    normalize-segment
-    addr I th-segment store-segment
-  LOOP
-;
 
 
 \ ENTRY POINT --------------------------------------
@@ -173,6 +189,6 @@ VARIABLE best-mhd
   read-wire-data #wire2 !
   wire2 str #wire2 @ build-wire-array
   close-input
-  wire1 #wire1 @ normalize-wire
-  wire2 #wire2 @ normalize-wire
+  wire1 wire1-normalized #wire1 @ normalize-wire
+  wire2 wire2-normalized #wire2 @ normalize-wire
   get-nearest-crossing ;
