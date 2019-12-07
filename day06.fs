@@ -1,9 +1,9 @@
-\ Orbit calculation things                                          sreyner 
+\ Orbit calculation things                                          sreyner
 
 : under+  ( a b c -- a+c b )  rot + swap ;
 
 2 cells constant /planet
-create planets 10000 /planet * allot
+create planets 3000 /planet * allot
 variable #planets
 : next-slot  ( -- addr )  planets #planets @ /planet * + ;
 
@@ -19,6 +19,36 @@ variable #planets
 : orbits    ( planet -- u )      0 swap (orbits) ;
 
 : total  ( -- )  0 next-slot planets do i @ orbits + /planet +loop ;
+
+create YOU-path 1000 CELLS allot
+
+variable #YOU-jumps
+variable #SAN-jumps
+
+: trace-YOU-path  ( -- )
+  0 #YOU-jumps !
+  [ 36 base ! ] YOU [ decimal ] lookup
+  begin
+    dup YOU-path #YOU-jumps @ cells + !
+    1 #YOU-jumps +!
+    lookup dup
+  while
+  repeat
+  drop ;
+
+: find-minimal-jumps ( -- )
+  0 #SAN-jumps !
+  [ 36 base ! ] SAN [ decimal ] lookup
+  begin
+    #you-jumps @ 0 do
+      dup YOU-path I cells + @ = if I #san-jumps @ + unloop exit then
+    loop
+    1 #san-jumps +!
+    lookup dup
+  while
+  repeat
+  #san-jumps @ + ;
+
 
 \ data screens
 36 base !
@@ -94,9 +124,11 @@ decimal
 decimal
 
 36 base !
-55W 3J9 (ao) KVN KQZ (ao) 6BG B79 (ao) Q7N HWW (ao) 5KL 6QJ (ao) CHN 1J5 (ao)   FBB 3TQ (ao) 575 Q8W (ao) 4F5 BW9 (ao) K4R YVH (ao) Z82 KM6 (ao) LVY TDL (ao)   X9D 55W (ao) L32 211 (ao) RBC 3Y1 (ao) QMW 2TS (ao) 9TX GBQ (ao) R71 GWY (ao)   69K R5R (ao) SL7 LCZ (ao) 1KY 5FP (ao) CR5 8PQ (ao) ZDN YL2 (ao) K9K YJZ (ao)   716 5DG (ao) FZM M7P (ao) MB4 TVC (ao) JVH DF1 (ao) XWK 3LR (ao) FKT H56 (ao)   578 B2P (ao) BJ4 WRZ (ao) TGN FRK (ao) SWP Q4Y (ao) 1M3 2FY (ao) 9DV YP3 (ao)   TQ7 KZF (ao) SBF 2R5 (ao) 351 16M (ao) RTR GWV (ao) Z5Y MPT (ao) 1BY RX7 (ao)   CL2 H97 (ao) L5G DL6 (ao) RRJ 1DK (ao) 9MD BS9 (ao) NNT 889 (ao) T17 3JF (ao)   9YQ WYD (ao) ZJL JKD (ao) 6RN 3QR (ao) ZVD P2X (ao) 21G NLF (ao) B7X 61N (ao)   LY3 RPV (ao) WS8 MPH (ao) 67P Q8F (ao) 83M F3F (ao) XFB QSQ (ao) FJ5 JKK (ao)   K86 575 (ao) MSD CBB (ao) 5WC PW5 (ao) NLF 7HX (ao) QZ9 CST (ao) 29M 1LB (ao)   BY3 4S4 (ao) 1DK H55 (ao) SPH WX2 (ao) GPP DXC (ao) FCB CZW (ao) 3HR KN1 (ao)   8XQ 3HD (ao) 4T6 3P9 (ao) XZ8 L92 (ao) 7GW GDM (ao) 7FM QX1 (ao) K6L SLL (ao)   QF8 3T5 (ao) 1R7 QT6 (ao) 3CQ CVJ (ao) 5NY SZ6 (ao) 
+55W 3J9 (ao) KVN KQZ (ao) 6BG B79 (ao) Q7N HWW (ao) 5KL 6QJ (ao) CHN 1J5 (ao)   FBB 3TQ (ao) 575 Q8W (ao) 4F5 BW9 (ao) K4R YVH (ao) Z82 KM6 (ao) LVY TDL (ao)   X9D 55W (ao) L32 211 (ao) RBC 3Y1 (ao) QMW 2TS (ao) 9TX GBQ (ao) R71 GWY (ao)   69K R5R (ao) SL7 LCZ (ao) 1KY 5FP (ao) CR5 8PQ (ao) ZDN YL2 (ao) K9K YJZ (ao)   716 5DG (ao) FZM M7P (ao) MB4 TVC (ao) JVH DF1 (ao) XWK 3LR (ao) FKT H56 (ao)   578 B2P (ao) BJ4 WRZ (ao) TGN FRK (ao) SWP Q4Y (ao) 1M3 2FY (ao) 9DV YP3 (ao)   TQ7 KZF (ao) SBF 2R5 (ao) 351 16M (ao) RTR GWV (ao) Z5Y MPT (ao) 1BY RX7 (ao)   CL2 H97 (ao) L5G DL6 (ao) RRJ 1DK (ao) 9MD BS9 (ao) NNT 889 (ao) T17 3JF (ao)   9YQ WYD (ao) ZJL JKD (ao) 6RN 3QR (ao) ZVD P2X (ao) 21G NLF (ao) B7X 61N (ao)   LY3 RPV (ao) WS8 MPH (ao) 67P Q8F (ao) 83M F3F (ao) XFB QSQ (ao) FJ5 JKK (ao)   K86 575 (ao) MSD CBB (ao) 5WC PW5 (ao) NLF 7HX (ao) QZ9 CST (ao) 29M 1LB (ao)   BY3 4S4 (ao) 1DK H55 (ao) SPH WX2 (ao) GPP DXC (ao) FCB CZW (ao) 3HR KN1 (ao)   8XQ 3HD (ao) 4T6 3P9 (ao) XZ8 L92 (ao) 7GW GDM (ao) 7FM QX1 (ao) K6L SLL (ao)   QF8 3T5 (ao) 1R7 QT6 (ao) 3CQ CVJ (ao) 5NY SZ6 (ao)
 decimal
 
 \ might as well run the program
+
 total cr .( Total orbits: ) . cr
-bye
+trace-you-path
+find-minimal-jumps .( Minimal jumps: ) . cr
